@@ -22,13 +22,23 @@ def authorization():
     hash_AuthorizationGame = hashlib.md5(("AuthorizationGame/" + token + Api.gameKey).encode()).hexdigest()
     payload_authorization = json.dumps({"Hash": hash_AuthorizationGame, "Token": token, "MobilePlatform": False})
     Authorization_response = requests.post(Api.main_URL + Api.AuthorizationGame_Url,
-                                            data=payload_authorization).json()
-    print(Authorization_response)
-    balance = int(Authorization_response["Balance"])
-
+                                            data=payload_authorization)
+    response_json = Authorization_response.json()
+    assert Authorization_response.status_code == 200, "Status code != 200"
+    print("====================== << Authorization response >> =========================")
+    print(f"Balance: {response_json['Balance']} \nCoin: {response_json['Coin']} \nCurrency: {response_json['Currency']} \n"
+          f"Game ID: {response_json['GameId']}")
 
 def get_slot_info():
-    git 
+
+    hash_getslotinfo = hashlib.md5(("GetSlotInfo/" + token + Api.gameKey).encode()).hexdigest()
+    payload_getslotinfo = json.dumps({"Hash": hash_getslotinfo, "Token": token})
+    getslotinfo_response = requests.post(Api.main_URL + Api.GetSlotInfo_Url,
+                                            data=payload_getslotinfo)
+    response_json = getslotinfo_response.json()
+    assert getslotinfo_response.status_code == 200, "Status code != 200"
+    print("====================== << GetSlotInfo Response >> =========================")
+    print(f"Bets: {response_json['Bets']} \nPayout: {response_json['Payout']} \nToken life time: {response_json['TokenLifeTime']} min")
 
 
 def base_game_flow(max_spin_count):
@@ -66,9 +76,10 @@ def base_game_flow(max_spin_count):
         result_id = GetAsyncResponse["ResultId"]
         spin_id = GetAsyncResponse['SpinResult']['Id']
         spin_count+=1
+        print("======================== << Regular (Paid) Spin >> ===========================")
         print(f"Spin Result: {spin_id} \nResult ID: {result_id} \nBalance: {GetAsyncResponse['WinInfo']['Balance']} \n"
               f"Current Spin Win: {GetAsyncResponse['WinInfo']['CurrentSpinWin']} \nTotal freespins count: {freespins_count}")
-        print("======================== << End of the round >> ===========================")
+
 
         if freespins_count > 0:
             print("===================== << Starting Freespins >> ========================")
@@ -106,9 +117,10 @@ def base_game_flow(max_spin_count):
                 result_id = GetAsyncResponse_freespin["ResultId"]
                 spin_id = GetAsyncResponse_freespin['SpinResult']['Id']
                 freespins_count = GetAsyncResponse_freespin["GameFreeSpins"][0]["RemainingFreeSpinsCount"]
+                print("===================== << Free Spin >> =====================")
                 print(f"Spin Result: {spin_id} \nResult ID: {result_id} \nBalance: {GetAsyncResponse_freespin['WinInfo']['Balance']}"
                       f"\nTotal freespins count: {freespins_count} \nTotal freespins win: {GetAsyncResponse_freespin['WinInfo']['TotalWin']}")
-                print("===================== << End of the freespin >> =====================")
+
 
 
 
@@ -116,5 +128,6 @@ session_count = 0
 while session_count < 3:
     generate_auth_token()
     authorization()
+    get_slot_info()
     base_game_flow(250)
     session_count += 1
