@@ -24,8 +24,11 @@ def authorization():
     Authorization_response = requests.post(Api.main_URL + Api.AuthorizationGame_Url,
                                             data=payload_authorization).json()
     print(Authorization_response)
-    global balance
     balance = int(Authorization_response["Balance"])
+
+
+def get_slot_info():
+    git 
 
 
 def base_game_flow(max_spin_count):
